@@ -135,7 +135,7 @@ extension Pairer: IOBluetoothDevicePairDelegate {
         if error == kIOReturnSuccess {
             log("Paired.")
             pair = nil
-            finish("Paired ✓")
+            finish("Paired ✓\nYou can quit MacWiiPair now.")
         } else {
             retryOrFail("0x\(String(UInt32(bitPattern: error), radix: 16))")
         }

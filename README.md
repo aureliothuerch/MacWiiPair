@@ -55,7 +55,8 @@ The order matters:
 2. Open MacWiiPair.
 3. Click **Pair Wii Remote**.
 4. Hold the **SYNC** button under the battery cover until the remote connects.
-5. The Wii Remote appears in Dolphin's controller settings and stays paired.
+5. The window shows **Paired ✓**. You can quit MacWiiPair now.
+6. The Wii Remote appears in Dolphin's controller settings and stays paired.
 
 After the first pairing, Dolphin alone connects the remote. You need MacWiiPair
 again only after you remove the remote from Bluetooth settings.
