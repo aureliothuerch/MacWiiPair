@@ -18,7 +18,7 @@ struct ContentView: View {
         VStack(spacing: 14) {
             Image(systemName: "gamecontroller.fill").font(.system(size: 42))
             Text(pairer.status).font(.headline).multilineTextAlignment(.center)
-            Text("Start Dolphin first. Then click Pair and hold SYNC (under the battery cover) on the Wii Remote.")
+            Text("Start Dolphin first. Then click Pair and press SYNC (under the battery cover) on the Wii Remote.")
                 .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
             Button(pairer.isBusy ? "Stop" : "Pair Wii Remote") {
                 pairer.isBusy ? pairer.stop() : pairer.start()
