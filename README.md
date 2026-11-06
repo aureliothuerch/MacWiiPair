@@ -13,6 +13,8 @@ that builds from the command line and needs no kernel extension.
 
 **[Download the latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest)**
 
+<p align="center"><img src="docs/screenshot.png" alt="The MacWiiPair window" width="480"></p>
+
 ## Why
 
 Older pairing tools break on macOS 27. IOBluetooth answers the Wii Remote's PIN
