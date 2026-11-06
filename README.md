@@ -31,7 +31,7 @@ Order matters here.
 
 1. Start Dolphin and leave it running.
 2. Open MacWiiPair and click Pair Wii Remote.
-3. Hold SYNC (under the battery cover) until the window says Paired.
+3. Press SYNC (under the battery cover) once and wait until the window says Paired.
 4. Quit MacWiiPair. The remote shows up in Dolphin's controller settings.
 
 You can connect up to four Wii Remotes at the same time, the limit Dolphin sets. Repeat steps 2 and 3 for each remote.
@@ -41,7 +41,7 @@ From then on Dolphin connects the remotes on its own. You only need MacWiiPair a
 ## Troubleshooting
 
 - The LEDs keep blinking and macOS lists the remote as connected: that is normal until a program like Dolphin takes over the connection. Start Dolphin.
-- "No Wii Remote found": hold SYNC while the search runs. If the search ended first, click Pair again and press SYNC again.
+- "No Wii Remote found": press SYNC while the search runs. If the search ended first, click Pair again and press SYNC again.
 - Nothing happens and there was no Bluetooth prompt: allow Bluetooth for MacWiiPair under System Settings > Privacy & Security.
 - Pairing fails: open an issue and attach `~/Library/Logs/MacWiiPair.log`.
 
