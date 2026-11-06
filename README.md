@@ -70,7 +70,7 @@ For a signed and notarized DMG set `SIGN_ID="Developer ID Application: ..."` and
 
 ## Contributing
 
-Pull requests are welcome and fall under GPL-3.0-or-later. MacWiiPair is an independent implementation, so please don't send code copied from [dolphin-emu/WiimotePair](https://github.com/dolphin-emu/WiimotePair) or its forks.
+Issues and pull requests are welcome. Contributions fall under GPL-3.0-or-later. MacWiiPair is an independent implementation, so please don't send code copied from [dolphin-emu/WiimotePair](https://github.com/dolphin-emu/WiimotePair) or its forks.
 
 ## Credits
 
