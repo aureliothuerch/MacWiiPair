@@ -4,9 +4,8 @@
 import Foundation
 import IOBluetooth
 
-/// Finds a Wii Remote via Bluetooth inquiry and pairs it.
-/// The PIN is the reversed Bluetooth address of the host (SYNC button) or of
-/// the remote (1 + 2 buttons), as documented on WiiBrew.
+// PIN: the reversed Bluetooth address of the host (SYNC button) or of the
+// remote (1 + 2 buttons), per WiiBrew.
 final class Pairer: NSObject, ObservableObject {
     @Published private(set) var status = "Ready"
     @Published private(set) var isBusy = false
@@ -21,7 +20,7 @@ final class Pairer: NSObject, ObservableObject {
     override init() {
         super.init()
         PairingHook.install { [weak self] in self?.log($0) }
-        PairingHook.pinProvider = { [weak self] in self?.pinCandidate() }
+        PairingHook.pinProvider = { [weak self] in self?.currentPIN() }
     }
 
     func log(_ line: String) {
@@ -57,6 +56,12 @@ final class Pairer: NSObject, ObservableObject {
     }
 
     private func beginPairing(_ device: IOBluetoothDevice) {
+        // An existing pairing never triggers a PIN request, so devicePairingFinished would never fire.
+        if device.isPaired() {
+            log("Already paired \(device.addressString ?? "?")")
+            inquiry?.stop()
+            return finish("Already paired ✓\nYou can quit MacWiiPair now.")
+        }
         guard let p = IOBluetoothDevicePair(device: device) else { return finish("Pairing unavailable") }
         p.delegate = self
         pair = p
@@ -67,8 +72,7 @@ final class Pairer: NSObject, ObservableObject {
         if r != kIOReturnSuccess { retryOrFail("start failed 0x\(String(UInt32(bitPattern: r), radix: 16))") }
     }
 
-    /// PIN for the current attempt, used by PairingHook to answer the system's PIN request.
-    private func pinCandidate() -> PairingHook.PIN? {
+    private func currentPIN() -> PairingHook.PIN? {
         guard isBusy, pair != nil else { return nil }
         let source = WiiRemote.pinSource(forAttempt: attempt)
         let address = source == .host
@@ -89,7 +93,7 @@ final class Pairer: NSObject, ObservableObject {
         if attempt < maxAttempts, let device = target {
             beginPairing(device)
         } else {
-            finish("Pairing failed – see log")
+            finish("Pairing failed, see the log")
         }
     }
 }
@@ -116,7 +120,7 @@ extension Pairer: IOBluetoothDeviceInquiryDelegate {
 }
 
 extension Pairer: IOBluetoothDevicePairDelegate {
-    // Only called on macOS versions where IOBluetooth still forwards the PIN request.
+    // Fallback for when PairingHook does not answer. On macOS 27 this path sends the key 0 and fails.
     func devicePairingPINCodeRequest(_ sender: Any!) {
         guard let p = sender as? IOBluetoothDevicePair else { return }
         let host = IOBluetoothHostController.default()?.addressAsString()
@@ -127,7 +131,7 @@ extension Pairer: IOBluetoothDevicePairDelegate {
         withUnsafeMutableBytes(of: &pin.data) { raw in
             for (i, b) in bytes.enumerated() { raw[i] = b }
         }
-        log("PIN requested – replying (\(useHost ? "host" : "remote") address)")
+        log("PIN requested, replying with \(useHost ? "host" : "remote") address")
         p.replyPINCode(6, pinCode: &pin)
     }
 
