@@ -30,4 +30,9 @@ enum WiiRemote {
     static func pinSource(forAttempt attempt: Int) -> PINSource {
         attempt % 2 == 0 ? .host : .remote
     }
+
+    /// Reads the PIN bytes as one little-endian number, the form the pairing reply expects.
+    static func pinKey(fromPIN bytes: [UInt8]) -> UInt64 {
+        bytes.enumerated().reduce(UInt64(0)) { $0 | UInt64($1.element) << (8 * UInt64($1.offset)) }
+    }
 }

@@ -35,6 +35,13 @@ import Testing
         #expect(WiiRemote.reversedAddress("e84e-ce-52-ce-70") == nil)       // wrong grouping
     }
 
+    @Test func pinKeyReadsBytesAsNumber() {
+        let pin: [UInt8] = [0x70, 0xce, 0x52, 0xce, 0x4e, 0xe8]
+        #expect(WiiRemote.pinKey(fromPIN: pin) == 0xe84ece52ce70)
+        #expect(WiiRemote.pinKey(fromPIN: [0x01, 0x02]) == 0x0201)
+        #expect(WiiRemote.pinKey(fromPIN: []) == 0)
+    }
+
     @Test func pinSourceAlternatesStartingWithHost() {
         #expect(WiiRemote.pinSource(forAttempt: 0) == .host)
         #expect(WiiRemote.pinSource(forAttempt: 1) == .remote)

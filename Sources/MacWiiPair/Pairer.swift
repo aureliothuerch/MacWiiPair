@@ -21,10 +21,12 @@ final class Pairer: NSObject, ObservableObject {
     override init() {
         super.init()
         PairingHook.install { [weak self] in self?.log($0) }
+        PairingHook.pinProvider = { [weak self] in self?.pinCandidate() }
     }
 
     func log(_ line: String) {
         NSLog("MacWiiPair: %@", line)
+        FileLog.write(line)
         DispatchQueue.main.async { self.logLines.append(line) }
     }
 
@@ -63,6 +65,21 @@ final class Pairer: NSObject, ObservableObject {
         log("Pairing \(device.addressString ?? "?") (attempt \(attempt + 1))")
         let r = p.start()
         if r != kIOReturnSuccess { retryOrFail("start failed 0x\(String(UInt32(bitPattern: r), radix: 16))") }
+    }
+
+    /// PIN for the current attempt, used by PairingHook to answer the system's PIN request.
+    private func pinCandidate() -> PairingHook.PIN? {
+        guard isBusy, pair != nil else { return nil }
+        let source = WiiRemote.pinSource(forAttempt: attempt)
+        let address = source == .host
+            ? IOBluetoothHostController.default()?.addressAsString()
+            : target?.addressString
+        guard let bytes = WiiRemote.reversedAddress(address) else { return nil }
+        let key = WiiRemote.pinKey(fromPIN: bytes)
+        let label = source == .host ? "host address" : "remote address"
+        let peerSelector = NSSelectorFromString("peer")
+        let peer = target.flatMap { $0.responds(to: peerSelector) ? $0.perform(peerSelector)?.takeUnretainedValue() : nil }
+        return (key, label, peer)
     }
 
     private func retryOrFail(_ reason: String) {

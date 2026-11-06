@@ -8,8 +8,10 @@ Pair a Wii Remote with your Mac and play with it in Dolphin on macOS 27.
 [![Release](https://img.shields.io/github/v/release/aureliothuerch/MacWiiPair)](https://github.com/aureliothuerch/MacWiiPair/releases/latest)
 
 MacWiiPair is a small native app. It scans for a Wii Remote, starts the
-pairing, and leaves the controller ready for Dolphin. It is a Swift package
-that builds from the command line and needs no kernel extension.
+pairing, and leaves the controller ready for Dolphin. In testing, pairing
+finished about 3 seconds after the search found the remote, and the PIN
+exchange itself took 150 ms. The app is signed and notarized by Apple, builds
+from the command line, and needs no kernel extension.
 
 **[Download the latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest)**
 
@@ -32,12 +34,7 @@ and a Wii Remote (a genuine RVL-CNT-01 is tested).
 1. Get `MacWiiPair-<version>.dmg` from the
    [latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest).
 2. Open the DMG and drag **MacWiiPair** onto the Applications shortcut.
-3. Open it. The app is not notarized, so macOS blocks the first launch. Open
-   System Settings > Privacy & Security and click **Open Anyway**, or run:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/MacWiiPair.app
-```
+3. Open MacWiiPair. macOS asks you to confirm the first launch. Click **Open**.
 
 ### Build from source
 
@@ -60,6 +57,9 @@ The order matters:
 4. Hold the **SYNC** button under the battery cover until the remote connects.
 5. The Wii Remote appears in Dolphin's controller settings and stays paired.
 
+After the first pairing, Dolphin alone connects the remote. You need MacWiiPair
+again only after you remove the remote from Bluetooth settings.
+
 ## Troubleshooting
 
 | Symptom | Fix |
@@ -67,38 +67,40 @@ The order matters:
 | LEDs keep blinking, macOS lists the remote as connected | Normal. The LEDs blink until an application such as Dolphin takes over the connection. Start Dolphin. |
 | No Wii Remote found | Hold SYNC while the search runs. Press it again if the search ends first. |
 | No Bluetooth prompt, nothing happens | Allow Bluetooth for MacWiiPair in System Settings > Privacy & Security. |
+| Pairing fails | Open an issue and attach `~/Library/Logs/MacWiiPair.log`. |
 
 ## How it works
 
 - `IOBluetoothDeviceInquiry` finds devices named `Nintendo RVL-*`.
-- `IOBluetoothDevicePair` starts the pairing. If the system asks for a PIN, the
-  app answers with the reversed Bluetooth address of the host (SYNC) or of the
-  remote (1 + 2), as WiiBrew documents.
-- `PairingHook` logs what CoreBluetooth's pairing agent receives, so later fixes
-  rest on observed behavior.
+- `IOBluetoothDevicePair` starts the pairing.
+- The PIN is the reversed Bluetooth address of the host (SYNC) or of the remote
+  (1 + 2), as WiiBrew documents. The app tries both.
+- `PairingHook` answers the system's PIN request itself, with pairing type 6 and
+  the PIN as a little-endian number. Without it, IOBluetooth passes the binary
+  PIN on as the key 0 and the remote rejects it.
 
 ## Status
 
-Version 0.1. I maintain it and update it when a new macOS version breaks
+Version 0.2.0. I maintain it and update it when a new macOS version breaks
 pairing.
 
 | macOS | Mac | Wii Remote | Result |
 |---|---|---|---|
-| 27.0.1 | Mac16,5 | RVL-CNT-01 | Connects and stays paired with Dolphin |
+| 27.0.1 | Mac16,5 | RVL-CNT-01 | Pairs about 3 seconds after discovery, works in Dolphin |
 
 Known limitations:
 
-- The status text in the app does not report the final pairing result.
 - Third-party remotes and the Balance Board are untested.
 - Other macOS versions are untested.
 
-Test reports on other setups help. Open an issue with the log from the app window.
+Test reports on other setups help. Open an issue with the log file.
 
 ## Development
 
 ```sh
 swift test                                  # unit tests
 ./package.sh                                # build the release DMG
+# signed and notarized: SIGN_ID="Developer ID Application: ..." NOTARY_PROFILE=<profile> ./package.sh
 tools/make-icns.sh                          # rebuild the app icon
 swift tools/dump-classes.swift Pairing      # list Objective-C classes by name
 ```
