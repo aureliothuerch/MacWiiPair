@@ -3,3 +3,15 @@ build/
 .swiftpm/
 .DS_Store
 notes/runtime-dump.txt
+
+# Never commit signing material or credentials
+*.p12
+*.p8
+*.cer
+*.pem
+*.key
+*.mobileprovision
+*.env
+*.log
+*.dmg
+*.zip
