@@ -80,9 +80,12 @@ again only after you remove the remote from Bluetooth settings.
   the PIN as a little-endian number. Without it, IOBluetooth passes the binary
   PIN on as the key 0 and the remote rejects it.
 
+The hook uses private CoreBluetooth and IOBluetooth interfaces, which Apple does
+not document. A macOS update can break them.
+
 ## Status
 
-Version 0.2.0. I maintain it and update it when a new macOS version breaks
+Version 0.2.1. I maintain it and update it when a new macOS version breaks
 pairing.
 
 | macOS | Mac | Wii Remote | Result |
