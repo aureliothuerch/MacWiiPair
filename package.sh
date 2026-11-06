@@ -1,11 +1,10 @@
 #!/bin/bash
-# Builds the app and packs it into a DMG for a GitHub release: build/MacWiiPair-<version>.dmg
+# Builds build/MacWiiPair-<version>.dmg.
 #
-#   ./package.sh                                   ad-hoc signed DMG for local use
-#   SIGN_ID="Developer ID Application: ..." \
-#   NOTARY_PROFILE=<keychain profile> ./package.sh signed, notarized and stapled DMG
+#   ./package.sh                                   ad-hoc signed, for local use
+#   SIGN_ID=... NOTARY_PROFILE=... ./package.sh    signed, notarized and stapled
 #
-# Create the profile once with: xcrun notarytool store-credentials <name>
+# Create the notary profile once: xcrun notarytool store-credentials <name>
 set -euo pipefail
 cd "$(dirname "$0")"
 export SIGN_ID="${SIGN_ID:--}"

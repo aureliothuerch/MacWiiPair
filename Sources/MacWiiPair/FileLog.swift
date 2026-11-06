@@ -3,7 +3,7 @@
 
 import Foundation
 
-/// Appends log lines to ~/Library/Logs/MacWiiPair.log so a failed pairing can be inspected afterwards.
+// Log file for bug reports: ~/Library/Logs/MacWiiPair.log
 enum FileLog {
     static let url = FileManager.default.homeDirectoryForCurrentUser
         .appendingPathComponent("Library/Logs/MacWiiPair.log")

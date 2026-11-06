@@ -21,7 +21,7 @@ func methods(of cls: AnyClass, prefix: String) {
     }
 }
 
-// Enumerate class *names* per image (never touching unrelated class objects).
+// List class names per image first. Touching every class object crashes the process (__NSGenericDeallocHandler).
 var seen = Set<String>()
 for probe in ["IOBluetoothDevice", "CBPeripheral"] {
     guard let c = NSClassFromString(probe), let img = class_getImageName(c) else { continue }

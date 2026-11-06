@@ -4,15 +4,13 @@
 import Foundation
 import ObjectiveC
 
-/// Answers CoreBluetooth's PIN request itself (private API).
-///
-/// On macOS 27 the system hands the pairing request to CBPairingAgent, and
-/// IOBluetooth turns the binary Wii Remote PIN into the key 0, which the remote
-/// rejects. The hook replies with pairing type 6 and the PIN as a number instead.
+// Workaround for macOS 27, built on private API. The system sends the PIN request
+// to CBPairingAgent, and IOBluetooth passes our binary PIN on as the key 0, which
+// the remote rejects. We answer first, with pairing type 6 and the PIN as a number.
 enum PairingHook {
     typealias PIN = (key: UInt64, label: String, peer: AnyObject?)
 
-    /// Returns the PIN for the current attempt, or nil to leave the request to the system.
+    // Returning nil leaves the request to the system.
     static var pinProvider: (() -> PIN?)?
 
     private static let pinRequestType = 6
@@ -27,15 +25,14 @@ enum PairingHook {
 
         let replacement: @convention(block) (AnyObject, AnyObject?) -> Void = { agent, request in
             log("handlePairingRequested: \(describe(request))")
-            if onMain({ handle(request, log: log) }) { return }
+            if onMain({ tryAnswer(request, log: log) }) { return }
             original(agent, sel, request)
         }
         method_setImplementation(method, imp_implementationWithBlock(replacement))
         log("Hook installed")
     }
 
-    /// Returns true when the request is a PIN request we answer ourselves.
-    private static func handle(_ request: AnyObject?, log: @escaping (String) -> Void) -> Bool {
+    private static func tryAnswer(_ request: AnyObject?, log: @escaping (String) -> Void) -> Bool {
         guard let info = request as? [String: Any] else { log("Request is not a dictionary"); return false }
         guard (info["kCBMsgArgPairingType"] as? NSNumber)?.intValue == pinRequestType else { return false }
         guard let pin = pinProvider?() else { log("No PIN for this request, leaving it to the system"); return false }
@@ -48,7 +45,7 @@ enum PairingHook {
         guard let peer else { log("Peer not found"); return false }
 
         log("Replying with \(pin.label)")
-        // bluetoothd expects the reply shortly after the request, not in the same instant.
+        // Reply 20 ms after the request. Not tested without the delay.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) {
             send(pin.key, to: peer, via: coordinator, log: log)
         }
@@ -71,6 +68,7 @@ enum PairingHook {
         log("PIN sent")
     }
 
+    // pinProvider reads Pairer state, which is only safe on the main thread.
     private static func onMain<T>(_ work: () -> T) -> T {
         Thread.isMainThread ? work() : DispatchQueue.main.sync(execute: work)
     }
