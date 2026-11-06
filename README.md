@@ -1,6 +1,6 @@
 # MacWiiPair
 
-Pairs a Wii Remote with your Mac on macOS 27 so you can use it in Dolphin.
+Pairs Wii Remotes and other Wii Bluetooth devices, like the Balance Board, with your Mac on macOS 27 so you can use them in Dolphin.
 
 [Download the latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest)
 
@@ -12,7 +12,7 @@ The old pairing tools stopped working on macOS 27. The system never passes the W
 
 ## Install
 
-You need an Apple silicon Mac on macOS 27, [Dolphin](https://dolphin-emu.org) and a Wii Remote.
+You need an Apple silicon Mac on macOS 27, [Dolphin](https://dolphin-emu.org) and a Wii Remote or another supported device (see below).
 
 Download the DMG from the [latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest), drag MacWiiPair onto the Applications shortcut and open it. The app is signed and notarized. macOS may ask once whether you want to open it, click Open.
 
@@ -53,9 +53,24 @@ On macOS 27, IOBluetooth passes that binary PIN on as the key 0 and the remote r
 
 The hook uses private CoreBluetooth and IOBluetooth interfaces that Apple does not document. A macOS update can break it. I maintain the app and will fix it when that happens.
 
-## Status
+## Supported devices
 
-Tested on macOS 27.0.1 (Mac16,5) with a genuine RVL-CNT-01. Third-party remotes, the Balance Board, other macOS versions and pairing several remotes in a row are untested. If you try one of those, a report with your log file helps.
+MacWiiPair pairs every Bluetooth device that advertises itself as `Nintendo RVL-*`.
+
+Tested:
+- Wii Remote (RVL-CNT-01) on macOS 27.0.1, Mac16,5
+
+Untested, should work:
+- Wii Remote Plus (RVL-CNT-01-TR)
+- Wii Balance Board (RVL-WBC-01), pair it with its red SYNC button
+- Several remotes in a row. Dolphin takes up to four.
+
+Untested, may not work:
+- Third-party remotes
+- Wii U Pro Controller
+- macOS versions other than 27.0.1
+
+If you try one of these, open an issue with your result and the log file.
 
 ## Development
 
