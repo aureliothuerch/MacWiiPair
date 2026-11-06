@@ -27,9 +27,9 @@ and a Wii Remote (a genuine RVL-CNT-01 is tested).
 
 ### Download
 
-1. Get `MacWiiPair-<version>.zip` from the
+1. Get `MacWiiPair-<version>.dmg` from the
    [latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest).
-2. Unzip it and move `MacWiiPair.app` to your Applications folder.
+2. Open the DMG and drag **MacWiiPair** onto the Applications shortcut.
 3. Open it. The app is not notarized, so macOS blocks the first launch. Open
    System Settings > Privacy & Security and click **Open Anyway**, or run:
 
@@ -96,7 +96,7 @@ Test reports on other setups help. Open an issue with the log from the app windo
 
 ```sh
 swift test                                  # unit tests
-./package.sh                                # build and zip for a release
+./package.sh                                # build the release DMG
 tools/make-icns.sh                          # rebuild the app icon
 swift tools/dump-classes.swift Pairing      # list Objective-C classes by name
 ```
