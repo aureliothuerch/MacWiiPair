@@ -1,44 +1,22 @@
 # MacWiiPair
 
-Pair a Wii Remote with your Mac and play with it in Dolphin on macOS 27.
+Pairs a Wii Remote with your Mac on macOS 27 so you can use it in Dolphin.
 
-![License](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)
-![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
-![Swift](https://img.shields.io/badge/Swift-6-orange)
-[![Release](https://img.shields.io/github/v/release/aureliothuerch/MacWiiPair)](https://github.com/aureliothuerch/MacWiiPair/releases/latest)
-
-MacWiiPair is a small native app. It scans for a Wii Remote, starts the
-pairing, and leaves the controller ready for Dolphin. In testing, pairing
-finished about 3 seconds after the search found the remote, and the PIN
-exchange itself took 150 ms. The app is signed and notarized by Apple, builds
-from the command line, and needs no kernel extension.
-
-**[Download the latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest)**
+[Download the latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest)
 
 <p align="center"><img src="docs/screenshot.png" alt="The MacWiiPair window" width="480"></p>
 
 ## Why
 
-Older pairing tools break on macOS 27. IOBluetooth answers the Wii Remote's PIN
-request itself and never calls the app, so pairing times out. Users report
-errors such as `(os/kern) default set`. MacWiiPair is a new implementation
-written for the current system.
+The old pairing tools stopped working on macOS 27. The system never passes the Wii Remote's PIN request on to the app, so pairing just times out (people see `(os/kern) default set`). MacWiiPair answers that request itself.
 
 ## Install
 
-You need an Apple silicon Mac with macOS 27 (tested on 27.0.1), [Dolphin](https://dolphin-emu.org),
-and a Wii Remote (a genuine RVL-CNT-01 is tested).
+You need an Apple silicon Mac on macOS 27, [Dolphin](https://dolphin-emu.org) and a Wii Remote.
 
-### Download
+Download the DMG from the [latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest), drag MacWiiPair onto the Applications shortcut and open it. The app is signed and notarized. macOS may ask once whether you want to open it, click Open.
 
-1. Get `MacWiiPair-<version>.dmg` from the
-   [latest release](https://github.com/aureliothuerch/MacWiiPair/releases/latest).
-2. Open the DMG and drag **MacWiiPair** onto the Applications shortcut.
-3. Open MacWiiPair. macOS asks you to confirm the first launch. Click **Open**.
-
-### Build from source
-
-You also need Xcode or the Command Line Tools.
+To build it yourself you need Xcode or the Command Line Tools:
 
 ```sh
 git clone https://github.com/aureliothuerch/MacWiiPair.git
@@ -49,82 +27,54 @@ open build/MacWiiPair.app
 
 ## Usage
 
-The order matters:
+Order matters here.
 
-1. **Start Dolphin** and leave it running.
-2. Open MacWiiPair.
-3. Click **Pair Wii Remote**.
-4. Hold the **SYNC** button under the battery cover until the remote connects.
-5. The window shows **Paired ✓**. You can quit MacWiiPair now.
-6. The Wii Remote appears in Dolphin's controller settings and stays paired.
+1. Start Dolphin and leave it running.
+2. Open MacWiiPair and click Pair Wii Remote.
+3. Hold SYNC (under the battery cover) until the window says Paired.
+4. Quit MacWiiPair. The remote shows up in Dolphin's controller settings.
 
-After the first pairing, Dolphin alone connects the remote. You need MacWiiPair
-again only after you remove the remote from Bluetooth settings.
+You can connect up to four Wii Remotes at the same time, the limit Dolphin sets. Repeat steps 2 and 3 for each remote.
+
+From then on Dolphin connects the remotes on its own. You only need MacWiiPair again if you remove the remote in the Bluetooth settings.
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---|---|
-| LEDs keep blinking, macOS lists the remote as connected | Normal. The LEDs blink until an application such as Dolphin takes over the connection. Start Dolphin. |
-| No Wii Remote found | Hold SYNC while the search runs. Press it again if the search ends first. |
-| No Bluetooth prompt, nothing happens | Allow Bluetooth for MacWiiPair in System Settings > Privacy & Security. |
-| Pairing fails | Open an issue and attach `~/Library/Logs/MacWiiPair.log`. |
+- The LEDs keep blinking and macOS lists the remote as connected: that is normal until a program like Dolphin takes over the connection. Start Dolphin.
+- "No Wii Remote found": hold SYNC while the search runs. If the search ended first, click Pair again and press SYNC again.
+- Nothing happens and there was no Bluetooth prompt: allow Bluetooth for MacWiiPair under System Settings > Privacy & Security.
+- Pairing fails: open an issue and attach `~/Library/Logs/MacWiiPair.log`.
 
 ## How it works
 
-- `IOBluetoothDeviceInquiry` finds devices named `Nintendo RVL-*`.
-- `IOBluetoothDevicePair` starts the pairing.
-- The PIN is the reversed Bluetooth address of the host (SYNC) or of the remote
-  (1 + 2), as WiiBrew documents. The app tries both.
-- `PairingHook` answers the system's PIN request itself, with pairing type 6 and
-  the PIN as a little-endian number. Without it, IOBluetooth passes the binary
-  PIN on as the key 0 and the remote rejects it.
+The app looks for devices named `Nintendo RVL-*` with an IOBluetooth inquiry and starts the pairing. The PIN is the reversed Bluetooth address of your Mac (SYNC button) or of the remote (1 + 2 buttons), as described on [WiiBrew](https://wiibrew.org/wiki/Wiimote). The app tries both.
 
-The hook uses private CoreBluetooth and IOBluetooth interfaces, which Apple does
-not document. A macOS update can break them.
+On macOS 27, IOBluetooth passes that binary PIN on as the key 0 and the remote rejects it. So a small hook (`PairingHook`) answers the system's PIN request first, with pairing type 6 and the PIN as a little-endian number.
+
+The hook uses private CoreBluetooth and IOBluetooth interfaces that Apple does not document. A macOS update can break it. I maintain the app and will fix it when that happens.
 
 ## Status
 
-Version 0.2.1. I maintain it and update it when a new macOS version breaks
-pairing.
-
-| macOS | Mac | Wii Remote | Result |
-|---|---|---|---|
-| 27.0.1 | Mac16,5 | RVL-CNT-01 | Pairs about 3 seconds after discovery, works in Dolphin |
-
-Known limitations:
-
-- Third-party remotes and the Balance Board are untested.
-- Other macOS versions are untested.
-
-Test reports on other setups help. Open an issue with the log file.
+Tested on macOS 27.0.1 (Mac16,5) with a genuine RVL-CNT-01. Third-party remotes, the Balance Board, other macOS versions and pairing several remotes in a row are untested. If you try one of those, a report with your log file helps.
 
 ## Development
 
 ```sh
-swift test                                  # unit tests
-./package.sh                                # build the release DMG
-# signed and notarized: SIGN_ID="Developer ID Application: ..." NOTARY_PROFILE=<profile> ./package.sh
-tools/make-icns.sh                          # rebuild the app icon
-swift tools/dump-classes.swift Pairing      # list Objective-C classes by name
+swift test                              # unit tests
+./package.sh                            # build the release DMG
+tools/make-icns.sh                      # rebuild the app icon
+swift tools/dump-classes.swift Pairing  # list Objective-C classes by name
 ```
 
-`dump-classes.swift` reads system frameworks through the public Objective-C
-runtime API.
+For a signed and notarized DMG set `SIGN_ID="Developer ID Application: ..."` and `NOTARY_PROFILE=<keychain profile>` before running `package.sh`.
 
 ## Contributing
 
-Pull requests are welcome. All contributions fall under GPL-3.0-or-later.
-MacWiiPair is an independent implementation, so please do not submit code copied
-from [dolphin-emu/WiimotePair](https://github.com/dolphin-emu/WiimotePair) or
-its forks.
+Pull requests are welcome and fall under GPL-3.0-or-later. MacWiiPair is an independent implementation, so please don't send code copied from [dolphin-emu/WiimotePair](https://github.com/dolphin-emu/WiimotePair) or its forks.
 
 ## Credits
 
-- [MaxfieldKassel/WiimotePair#1](https://github.com/MaxfieldKassel/WiimotePair/pull/1)
-  documented the macOS 27 root cause. MacWiiPair shares no code with it.
-- [WiiBrew](https://wiibrew.org/wiki/Wiimote) documents the PIN scheme.
-- [Dolphin](https://dolphin-emu.org) is the emulator this app serves.
+[MaxfieldKassel/WiimotePair#1](https://github.com/MaxfieldKassel/WiimotePair/pull/1) found the macOS 27 root cause. MacWiiPair shares no code with it. [WiiBrew](https://wiibrew.org/wiki/Wiimote) documents the PIN scheme.
 
 MacWiiPair is not affiliated with Nintendo or the Dolphin project.
 
